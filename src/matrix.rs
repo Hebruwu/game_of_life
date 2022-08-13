@@ -2,7 +2,7 @@ mod matrix {
     use crate::matrix::errors::{OutOfBoundsError, UnachieveableSize};
 
     /// Represents a matrix of n rows and m columns.
-    pub struct SmallMatrix<T> {
+    struct SmallMatrix<T> {
         rows: usize,
         columns: usize,
         data: Vec<T>,
@@ -29,12 +29,56 @@ mod matrix {
         /// * `x`: The row index which to use. <br/>
         ///
         /// returns: Result<&T, OutOfBoundsError>
-        pub fn get_row(&self, x: usize) -> Result<&T, OutOfBoundsError> {
-            if x > self.rows {
+        pub fn get_row(&self, row: usize) -> Result<&[T], OutOfBoundsError> {
+            if row > self.rows {
                 return Err(OutOfBoundsError)
             }
+            let first_in_row: usize = row * self.columns;
+            let last_in_row: usize = first_in_row + self.columns - 1;
 
-            return Ok(&self.data[x])
+            return Ok(&self.data[first_in_row..last_in_row])
+        }
+
+        /// Returns the value located at the (x,y) position in the matrix.
+        /// * `x`: the row position.
+        /// * `y`: the column position.
+        ///
+        /// returns: Result<&T, OutOfBoundsError>
+        pub fn get_val_at(&self, x: usize, y:usize) -> Result<&T, OutOfBoundsError> {
+            let position_in_vector: usize = x * self.columns + y * self.rows;
+            match self.data.get(position_in_vector) {
+                Some(t) => Ok(t),
+                None => Err(OutOfBoundsError),
+            }
+        }
+
+        /// Sets value at a provided (x, y) position in the vector. Returns an empty result if
+        /// successful.
+        /// * `x`: the row position.
+        /// * `y`: the column position.
+        /// * `value`: the value to put into the matrix.
+        pub fn set_val_at(&mut self, x: usize, y: usize, value: T) -> Result<(), OutOfBoundsError> {
+            if x > self.rows || y > self.columns {
+                return Err(OutOfBoundsError)
+            }
+            let position_in_vector: usize = x * self.columns + y * self.rows;
+            self.data[position_in_vector] = value;
+            return Ok(())
+        }
+
+        /// Returns a mutable reference to the value located at the (x,y) position in the matrix.
+        /// User is discouraged to use this function and instead to operate with get_val_at and
+        /// set_val_at. This function is included for the sake of completeness of the module.
+        /// * `x`: the row position.
+        /// * `y`: the column position.
+        ///
+        /// returns: Result<mut &T, OutOfBoundsError>
+        pub fn get_mut_val_at(&mut self, x: usize, y: usize) -> Result<&T, OutOfBoundsError> {
+            let position_in_vector: usize = x * self.columns + y * self.rows;
+            match self.data.get_mut(position_in_vector) {
+                Some(t) => Ok(t),
+                None => Err(OutOfBoundsError),
+            }
         }
     }
 }
