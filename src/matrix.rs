@@ -1,8 +1,8 @@
-mod matrix {
+pub mod matrix {
     use crate::matrix::errors::{OutOfBoundsError, UnachieveableSize};
 
     /// Represents a matrix of n rows and m columns.
-    struct SmallMatrix<T> {
+    pub struct SmallMatrix<T> {
         rows: usize,
         columns: usize,
         data: Vec<T>,
@@ -25,6 +25,11 @@ mod matrix {
             Ok(Self {rows: n, columns: m, data:Vec::with_capacity(vector_size)})
         }
 
+        /// Returns a tuple that represents the size of the matrix as (n, m).
+        pub fn get_size(self) -> (usize, usize) {
+            return (self.rows, self.columns)
+        }
+
         /// Returns an immutable row slice at the index specified by the caller. <br/>
         /// * `x`: The row index which to use. <br/>
         ///
@@ -33,6 +38,7 @@ mod matrix {
             if row > self.rows {
                 return Err(OutOfBoundsError)
             }
+
             let first_in_row: usize = row * self.columns;
             let last_in_row: usize = first_in_row + self.columns - 1;
 
@@ -45,10 +51,14 @@ mod matrix {
         ///
         /// returns: Result<&T, OutOfBoundsError>
         pub fn get_val_at(&self, x: usize, y:usize) -> Result<&T, OutOfBoundsError> {
+            if x > self.rows || y > self.columns {
+                return Err(OutOfBoundsError)
+            }
+
             let position_in_vector: usize = x * self.columns + y * self.rows;
             match self.data.get(position_in_vector) {
-                Some(t) => Ok(t),
-                None => Err(OutOfBoundsError),
+                Some(t) => return Ok(t),
+                None => return Err(OutOfBoundsError),
             }
         }
 
@@ -57,10 +67,13 @@ mod matrix {
         /// * `x`: the row position.
         /// * `y`: the column position.
         /// * `value`: the value to put into the matrix.
+        ///
+        /// returns: Result<(), OutOfBoundsError>
         pub fn set_val_at(&mut self, x: usize, y: usize, value: T) -> Result<(), OutOfBoundsError> {
             if x > self.rows || y > self.columns {
                 return Err(OutOfBoundsError)
             }
+
             let position_in_vector: usize = x * self.columns + y * self.rows;
             self.data[position_in_vector] = value;
             return Ok(())
@@ -74,6 +87,10 @@ mod matrix {
         ///
         /// returns: Result<mut &T, OutOfBoundsError>
         pub fn get_mut_val_at(&mut self, x: usize, y: usize) -> Result<&T, OutOfBoundsError> {
+            if x > self.rows || y > self.columns {
+                return Err(OutOfBoundsError)
+            }
+
             let position_in_vector: usize = x * self.columns + y * self.rows;
             match self.data.get_mut(position_in_vector) {
                 Some(t) => Ok(t),
