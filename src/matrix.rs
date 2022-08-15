@@ -56,9 +56,9 @@ pub mod matrix {
             }
 
             let position_in_vector: usize = x * self.columns + y * self.rows;
-            match self.data.get(position_in_vector) {
-                Some(t) => return Ok(t),
-                None => return Err(OutOfBoundsError),
+            return match self.data.get(position_in_vector) {
+                Some(t) => Ok(t),
+                None => Err(OutOfBoundsError),
             }
         }
 
@@ -86,7 +86,7 @@ pub mod matrix {
         /// * `y`: the column position.
         ///
         /// returns: Result<mut &T, OutOfBoundsError>
-        pub fn get_mut_val_at(&mut self, x: usize, y: usize) -> Result<&T, OutOfBoundsError> {
+        pub fn get_mut_val_at(&mut self, x: usize, y: usize) -> Result<& mut T, OutOfBoundsError> {
             if x > self.rows || y > self.columns {
                 return Err(OutOfBoundsError)
             }
