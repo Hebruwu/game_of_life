@@ -1,38 +1,12 @@
 pub mod simulate_game {
+    use std::u32::MAX;
     use crate::matrix::matrix::SmallMatrix;
     use rand::prelude::*;
     use rand_chacha::ChaCha8Rng;
 
-    struct Cell {
-        alive_now: bool,
-        alive_next: bool,
-
-        curr_r: u8,
-        curr_g: u8,
-        curr_b: u8,
-
-        next_r: u8,
-        next_g: u8,
-        next_b: u8
-    }
-
-    impl Cell {
-        fn new(alive: bool, r:u8, g:u8, b:u8) -> Self {
-            Self {alive_now: alive, alive_next: alive,
-                curr_r:r, curr_g:g, curr_b:b,
-                next_r: 0, next_g: 0, next_b: 0 }
-        }
-
-        fn advance_gen(& mut self) {
-            self.alive_now = self.alive_next;
-            self.curr_r = self.curr_r;
-            self.curr_g = self.next_g;
-            self.curr_b = self.next_b;
-        }
-    }
 
     pub fn run_game(n: usize, m: usize, seed: u64) {
-        let mut grid: SmallMatrix<Cell> = match SmallMatrix::new(n, m) {
+        let mut grid: SmallMatrix<u32> = match SmallMatrix::new(n, m) {
             Ok(matrix) => matrix,
             Err(_) => panic!("Unachievable size of matrix")
         };
@@ -40,16 +14,26 @@ pub mod simulate_game {
         populate_grid(& mut grid, seed);
     }
 
-    fn populate_grid(grid: & mut SmallMatrix<Cell>, seed:u64) {
+    pub fn initialize_game(n: usize, m: usize, seed: u64) -> SmallMatrix<u32>{
+        let mut grid: SmallMatrix<u32> = match SmallMatrix::new(n, m) {
+            Ok(matrix) => matrix,
+            Err(_) => panic!("Unachievable size of matrix")
+        };
+
+        populate_grid(& mut grid, seed);
+        return grid
+    }
+
+    fn populate_grid(grid: & mut SmallMatrix<u32>, seed:u64) {
         let (num_rows, num_columns) = grid.get_size();
         let mut randomizer = ChaCha8Rng::seed_from_u64(seed);
         for x in 0..num_rows {
             for y in 0..num_columns {
-                let new_cell = Cell::new(
-                    randomizer.gen_bool(0.5),
-                    randomizer.gen_range(0..255),
-                    randomizer.gen_range(0..255),
-                    randomizer.gen_range(0..255));
+                let new_cell: u32 = if randomizer.gen_bool(0.5) {
+                    MAX
+                } else {
+                    0
+                };
                 match grid.set_val_at(x, y, new_cell) {
                     Ok(_) => (),
                     Err(_) => panic!("Grid accessed out of bounds")
@@ -58,7 +42,7 @@ pub mod simulate_game {
         }
     }
 
-    fn next_generation(grid: &SmallMatrix<Cell>) {
+    pub fn next_generation(grid: &SmallMatrix<u32>) {
         let (num_rows, num_columns) = grid.get_size();
         for x in 0..num_rows {
             for y in 0..num_columns {
@@ -67,14 +51,11 @@ pub mod simulate_game {
 
                 // more than 3 neighbors dies.
 
-                // dead with 3 neighbors get back to life with average color of neighbors
-
-                // alive with 3 neighbors mutate color through the complement of the average
             }
         }
     }
 
-    fn get_neighbor_data(grid: &SmallMatrix<Cell>, x: usize, y: usize) -> (u8, u8, u8, u8) {
+    fn get_neighbor_data(grid: &SmallMatrix<u32>, x: usize, y: usize) -> (u8, u8, u8, u8) {
         let mut num_living_neighbors = 0;
         let mut avg_r = 0;
         let mut avg_g = 0;
