@@ -29,7 +29,7 @@ pub mod simulate_game {
         let mut randomizer = ChaCha8Rng::seed_from_u64(seed);
         for x in 0..num_rows {
             for y in 0..num_columns {
-                let new_cell: u32 = if randomizer.gen_bool(0.5) {
+                let new_cell: u32 = if randomizer.gen_bool(0.01) {
                     MAX
                 } else {
                     0
@@ -42,24 +42,28 @@ pub mod simulate_game {
         }
     }
 
-    pub fn next_generation(grid: &SmallMatrix<u32>) {
+    pub fn next_generation(grid: &mut SmallMatrix<u32>) {
         let (num_rows, num_columns) = grid.get_size();
         for x in 0..num_rows {
             for y in 0..num_columns {
-                let (num_living, avg_r, avg_g, avg_b) = get_neighbor_data(&grid, x, y);
+                let num_living = get_neighbor_data(&grid, x, y);
                 // less than 2 neighbors dies.
-
-                // more than 3 neighbors dies.
-
+                if num_living < 2 || num_living > 3 {
+                    grid.set_val_at(x, y, 0).expect("Out of bounds access");
+                }
+                else if num_living == 3 {
+                    grid.set_val_at(x, y, MAX).expect("Out of bounds access");
+                }
             }
         }
     }
 
-    fn get_neighbor_data(grid: &SmallMatrix<u32>, x: usize, y: usize) -> (u8, u8, u8, u8) {
+    pub fn as_vector (grid: &SmallMatrix<u32>) -> &Vec<u32> {
+        &grid.data
+    }
+
+    fn get_neighbor_data(grid: &SmallMatrix<u32>, x: usize, y: usize) -> (u8) {
         let mut num_living_neighbors = 0;
-        let mut avg_r = 0;
-        let mut avg_g = 0;
-        let mut avg_b = 0;
 
         let (x_bound, y_bound) = grid.get_size();
 
@@ -76,20 +80,11 @@ pub mod simulate_game {
                 // Use unwrap here because if we access something out of bounds the program is not
                 // working correctly.
                 let neighbor = grid.get_val_at(x_offset, y_offset).unwrap();
-                if neighbor.alive_now {
+                if neighbor > &0 {
                     num_living_neighbors += 1;
-                    avg_r += neighbor.next_r;
-                    avg_g += neighbor.next_g;
-                    avg_b += neighbor.next_b;
-
                 }
             }
         }
-        if num_living_neighbors > 0 {
-            avg_r /= num_living_neighbors;
-            avg_g /= num_living_neighbors;
-            avg_b /= num_living_neighbors;
-        }
-        (num_living_neighbors, avg_r, avg_g, avg_b)
+        num_living_neighbors
     }
 }

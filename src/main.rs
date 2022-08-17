@@ -12,7 +12,7 @@ const HEIGHT: usize = 360;
 
 fn main() {
     let mut grid = simulate_game::initialize_game(WIDTH, HEIGHT, 15);
-    let mut buffer:Vec<u32>;
+    let mut buffer:&Vec<u32>;
 
     let mut window = Window::new(
         "Test - ESC to exit",
@@ -32,7 +32,7 @@ fn main() {
         buffer = simulate_game::as_vector(&grid);
         // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
         window
-            .update_with_buffer(&buffer, WIDTH, HEIGHT)
+            .update_with_buffer(buffer, WIDTH, HEIGHT)
             .unwrap();
     }
 }
